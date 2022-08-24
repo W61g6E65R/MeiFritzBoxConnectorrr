@@ -1,0 +1,6 @@
+fritzconnection
+configparser
+psycopg2-binary
+pandas
+datetime
+schedule
