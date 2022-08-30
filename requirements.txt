@@ -1,6 +1,9 @@
-fritzconnection
+# Global requierements
 configparser
+datetime
+
+# Project specific
+fritzconnection
 psycopg2-binary
 pandas
-datetime
 schedule
