@@ -1,9 +1,11 @@
 # Global requierements
 configparser
 datetime
+python-dotenv
+
 
 # Project specific
 fritzconnection
-psycopg2-binary
+psycopg
 pandas
 schedule

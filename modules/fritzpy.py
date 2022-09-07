@@ -1,74 +1,118 @@
 
 # Imports: global
 import logging
-from tkinter.messagebox import NO
-from tokenize import Double
 import datetime
 
 # Imports: 3rd party
 from fritzconnection import FritzConnection
 from fritzconnection.lib.fritzhomeauto import FritzHomeAutomation
+from fritzconnection.lib.fritzstatus import FritzStatus
 
 # Imports: local
 import modules.globalConstants
 import modules.dbConnector
 
 # Global var
-g_fritzBoxConnection = ''
+g_fritzBoxHomeAutomation = ''
+g_fritBoxStatus = ''
 g_fritzBoxIdentifier = ''
+g_dbDeviceList = []
 
-logging.basicConfig(modules.globalConstants.LOGGING_CONFIG_STRING)
+logging.basicConfig(format=modules.globalConstants.LOGGING_CONFIG_FORMAT, level=logging.INFO)
 
-def connect(fritzBoxIPAddress, fritzBoxUserName, fritzBoxUserPassword, fritzBoxIdentifier:str='FritzBox') -> None:
+def connect(fritzBoxIPAddress:str, fritzBoxUserName:str, fritzBoxUserPassword:str, fritzBoxIdentifier:str='FritzBox') -> None:
         
-    global g_fritzBoxConnection
+    global g_fritzBoxHomeAutomation
     global g_fritzBoxIdentifier
+    global g_dbDeviceList
+    global g_fritzBoxStatus
+
     g_fritzBoxIdentifier = fritzBoxIdentifier
-    g_fritzBoxConnection = FritzHomeAutomation(  
-        address=fritzBoxIPAddress, 
+    g_fritzBoxHomeAutomation = FritzHomeAutomation(  
+                address=fritzBoxIPAddress, 
+                user=fritzBoxUserName, 
+                password=fritzBoxUserPassword)
+
+    g_fritzBoxStatus = FritzStatus(
+                address=fritzBoxIPAddress, 
                 user=fritzBoxUserName, 
                 password=fritzBoxUserPassword)
 
     logging.info(f"Module fritzpy: Connection to {fritzBoxUserName}@{fritzBoxIPAddress} established")
 
+    # First read in all configured devices from database
+    g_dbDeviceList = modules.dbConnector.getDeviceList(fritzBoxIdentifier)
+
 def printDeviceList() -> None:
     """ Read and print the full device list from the FritzBox
     """
-    global g_fritzBoxConnection
-    info = g_fritzBoxConnection.device_informations()
+    global g_fritzBoxHomeAutomation
+    info = g_fritzBoxHomeAutomation.device_informations()
     logging.info(f"Module fritzpy: Get Device list")
     for key in info:
         print (key)
         print ('/n')
 
-def updateDeviceValues(identifier:str) -> None:
+def updateDeviceValues(fritzboxId:str) -> None:
+    """ Read values for all devices in database from FritzBox and update if neccessary
 
-    global g_fritzBoxConnection
-    # First read in all configured devices from database
-    m_deviceList = modules.dbConnector.getDeviceList()
-    m_temperature = None
-    m_temperature_old = None
-    m_Read_Temperature = False
-    m_Read_Power = False
-    m_Read_Humidity = False
+    Args:
+        identifier (str): Identifier of the fritzBox
+    """
+    global g_fritzBoxHomeAutomation
+    global g_dbDeviceList
 
     # Get all values from the given device from the fritzBox
-    for device in m_deviceList:
-        m_currentDeviceValues = g_fritzBoxConnection.get_device_information_by_identifier(identifier)
-        
+    for device in g_dbDeviceList:
         # Read Config from deviceList
-        m_Read_Temperature = device[2]
-        m_Read_Power = device[3]
-        m_Read_Humidity = device[4]
+        m_DeviceIdentifier = device[0]
+        m_DeviceActive     = device[5]
+        m_Read_Temperature = device[1]
+        m_Read_Power = device[2]
+        #m_Read_Humidity = device[4]
 
-        # Temperature
-        if (m_Read_Temperature):
-            m_temperature = m_currentDeviceValues[modules.globalConstants.FRITZBOX_PARAMETER_NAME_TEMPERATURE]
-            # Check if temperature has changed considerable and then add new value if neccessary
-            m_temperature_old = modules.dbConnector.getLastValue(identifier, 
-                                                                modules.globalConstants.FRITZBOX_PARAMETER_NAME_TEMPERATURE)
-            
-            if (abs(m_temperature - m_temperature_old ) > modules.globalConstants.FRITZBOX_TEMPERATURE_DELTA_MIN):
-                modules.dbConnector.addValue(datetime.now(), g_fritzBoxIdentifier, identifier,
-                                            modules.globalConstants.FRITZBOX_PARAMETER_NAME_TEMPERATURE,
-                                            m_temperature)
+        if (m_Read_Temperature == True and m_DeviceActive == True):
+            updateValue(fritzboxId, m_DeviceIdentifier, 
+                        modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_NAME, modules.globalConstants.FRITZBOX_TEMPERATURE_DELTA_MIN, 
+                        modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_VALID, 
+                        modules.globalConstants.FRITZBOX_TEMPERATURE_FACTOR, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_OFFSET)
+
+        if (m_Read_Power == True and m_DeviceActive == True):
+            updateValue(fritzboxId, m_DeviceIdentifier, 
+                        modules.globalConstants.FRITZBOX_POWER_PARAMETER_NAME, modules.globalConstants.FRITZBOX_POWER_DELTA_MIN, 
+                        modules.globalConstants.FRITZBOX_POWER_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_POWER_PARAMETER_VALID, 
+                        modules.globalConstants.FRITZBOX_POWER_FACTOR)
+        
+
+def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta:float, paraEnableTag:str, paraValidTag:str, paraFactor:float = 0.0, paraOffsetTag:str = '') -> None:                  
+    
+    # Read parameter from fritzBox
+    try:
+        m_currentDeviceValues = g_fritzBoxHomeAutomation.get_device_information_by_identifier(deviceIdentifier)
+    except Exception as e:
+        logging.error(f'ERROR: Module fritzpy: {deviceIdentifier}@{fritzBoxId}')
+        logging.error(e)
+
+    m_currValue = m_currentDeviceValues[paraName] * paraFactor
+    m_valid = m_currentDeviceValues[paraValidTag]
+    m_enabled = m_currentDeviceValues[paraEnableTag]
+
+    if (paraOffsetTag != ''):
+        paraOffset = m_currentDeviceValues[paraOffsetTag]
+    else:
+        paraOffset = 0.0
+
+    m_timestamp = str(datetime.datetime.now())
+    # Check if parameter has changed considerable and then add new value if neccessary
+    m_oldValue = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
+    if m_valid and m_enabled:
+        if (abs(m_currValue - m_oldValue ) > paraMinDelta):
+            modules.dbConnector.addValue(
+                                        m_timestamp, g_fritzBoxIdentifier, deviceIdentifier,
+                                        paraName, m_currValue, paraOffset
+                                        )
+            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {m_currValue} +- {paraOffset}]')
+        else:
+            logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {m_oldValue} = {m_currValue}]')
+    else:
+        logging.info(f'Module fritzPy Parameter {paraName} not accessible: [Enabled:{m_enabled} / Valid{m_valid}:')
