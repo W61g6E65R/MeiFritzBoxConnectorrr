@@ -32,6 +32,7 @@ modules.dbConnector.connect(m_dbName, m_dbUser, m_dbPassword, m_dbHost, m_dbPort
 modules.fritzpy.connect(m_fritzIp, m_fritzUser, m_fritzPass, m_fritzIdent)
 
 schedule.every(15).seconds.do(modules.fritzpy.updateDeviceValues, m_fritzIdent)
+schedule.every(60).minutes.do(modules.fritzpy.updateDeviceList, m_fritzIdent)
 
 while True:
     schedule.run_pending()

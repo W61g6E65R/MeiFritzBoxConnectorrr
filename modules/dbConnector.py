@@ -1,6 +1,7 @@
 # Imports: global
 import errno
 import logging
+import datetime
 
 # Imports: project specific
 import psycopg
@@ -100,7 +101,7 @@ def getLastValue(fritzBoxId:str, identifier:str, parametername:str):
     global g_dbConnection
 
     m_dbCursor = g_dbConnection.cursor()
-    m_lastValue = 0.0
+    m_lastValue = (datetime.datetime.now(), 0.0) # Init with valid timestamp
     m_sqlStatement = f"SELECT timestamp, value FROM values_float \
                         WHERE fritzboxid   = '{fritzBoxId}' AND \
                               identifier = '{identifier}' AND \
@@ -111,7 +112,7 @@ def getLastValue(fritzBoxId:str, identifier:str, parametername:str):
         g_dbConnection.commit()
         m_rows = m_dbCursor.fetchone()
         if m_rows != None:
-            m_lastValue = m_rows[1]
+            m_lastValue = (m_rows[0], m_rows[1])
     except:
         g_dbConnection.rollback()
     

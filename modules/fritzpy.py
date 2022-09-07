@@ -23,8 +23,7 @@ logging.basicConfig(format=modules.globalConstants.LOGGING_CONFIG_FORMAT, level=
 def connect(fritzBoxIPAddress:str, fritzBoxUserName:str, fritzBoxUserPassword:str, fritzBoxIdentifier:str='FritzBox') -> None:
         
     global g_fritzBoxHomeAutomation
-    global g_fritzBoxIdentifier
-    global g_dbDeviceList
+    global g_fritzBoxIdentifier    
     global g_fritzBoxStatus
 
     g_fritzBoxIdentifier = fritzBoxIdentifier
@@ -41,6 +40,10 @@ def connect(fritzBoxIPAddress:str, fritzBoxUserName:str, fritzBoxUserPassword:st
     logging.info(f"Module fritzpy: Connection to {fritzBoxUserName}@{fritzBoxIPAddress} established")
 
     # First read in all configured devices from database
+    updateDeviceList(fritzBoxIdentifier)
+
+def updateDeviceList(fritzBoxIdentifier:str) -> None:
+    global g_dbDeviceList
     g_dbDeviceList = modules.dbConnector.getDeviceList(fritzBoxIdentifier)
 
 def printDeviceList() -> None:
@@ -84,7 +87,7 @@ def updateDeviceValues(fritzboxId:str) -> None:
                         modules.globalConstants.FRITZBOX_POWER_FACTOR)
         
 
-def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta:float, paraEnableTag:str, paraValidTag:str, paraFactor:float = 0.0, paraOffsetTag:str = '') -> None:                  
+def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta:float, paraEnableTag:str, paraValidTag:str, paraFactor:float = 1.0, paraOffsetTag:str = '') -> None:                  
     
     # Read parameter from fritzBox
     try:
@@ -102,17 +105,20 @@ def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta
     else:
         paraOffset = 0.0
 
-    m_timestamp = str(datetime.datetime.now())
+    m_timestamp = datetime.datetime.now()
     # Check if parameter has changed considerable and then add new value if neccessary
-    m_oldValue = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
-    if m_valid and m_enabled:
-        if (abs(m_currValue - m_oldValue ) > paraMinDelta):
+    m_oldEntry = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
+    m_oldTimestamp = m_oldEntry[0]
+    m_oldValue = m_oldEntry[1]
+    m_timeDiff = (m_timestamp.microsecond - m_oldTimestamp.microsecond) / 60000 # Convert to seconds
+    if m_valid == 'VALID' and m_enabled == 'ENABLED':
+        if ((abs(m_currValue - m_oldValue ) > paraMinDelta) or (m_timeDiff > modules.globalConstants.FRITZBOX_TIMESTAMP_DELTA_MAX)): 
             modules.dbConnector.addValue(
-                                        m_timestamp, g_fritzBoxIdentifier, deviceIdentifier,
+                                        str(m_timestamp), g_fritzBoxIdentifier, deviceIdentifier,
                                         paraName, m_currValue, paraOffset
                                         )
-            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {m_currValue} +- {paraOffset}]')
+            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {m_currValue} +- {paraOffset}] / Time since last update [min]: {m_timeDiff}')
         else:
             logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {m_oldValue} = {m_currValue}]')
     else:
-        logging.info(f'Module fritzPy Parameter {paraName} not accessible: [Enabled:{m_enabled} / Valid{m_valid}:')
+        logging.info(f'Module fritzPy Parameter {paraName} on device {deviceIdentifier} not accessible: [Enabled: {m_enabled} / Valid {m_valid}]')

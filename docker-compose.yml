@@ -1,7 +1,7 @@
 version: "3.9" 
 services:
   fritzBoxUnten:
-    image: myfritzconnectorrr:latest
+    image: meifritzconnectorrr:latest
     environment:
       FRITZBOX_USER_NAME : ${FRITZBOX_1_USER_NAME}
       FRITZBOX_USER_PASSWORD : ${FRITZBOX_1_USER_PASSWORD}
@@ -13,7 +13,7 @@ services:
       DATABASE_HOST          : ${DATABASE_HOST}
       DATABASE_PORT          : ${DATABASE_PORT}
   fritzBoxOben:
-    image: myfritzconnectorrr:latest
+    image: meifritzconnectorrr:latest
     environment:
       FRITZBOX_USER_NAME : ${FRITZBOX_2_USER_NAME}
       FRITZBOX_USER_PASSWORD : ${FRITZBOX_2_USER_PASSWORD}
