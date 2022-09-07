@@ -9,8 +9,8 @@ FRITZBOX_TEMPERATURE_PARAMETER_NAME     = 'NewTemperatureCelsius'
 FRITZBOX_TEMPERATURE_PARAMETER_VALID    = 'NewTemperatureIsValid'
 FRITZBOX_TEMPERATURE_PARAMETER_ENABLED  = 'NewTemperatureIsEnabled'
 FRITZBOX_TEMPERATURE_PARAMETER_OFFSET   = 'NewTemperatureOffset'
-FRITZBOX_TEMPERATURE_DELTA_MIN          = 0.1 # Only write values if delta is reached
-FRITZBOX_TEMPERATURE_FACTOR             = 1 # Factor for multiplication 
+FRITZBOX_TEMPERATURE_DELTA_MIN          = 1 # Only write values if delta is reached
+FRITZBOX_TEMPERATURE_FACTOR             = 0.1 # Factor for multiplication 
 
 FRITZBOX_POWER_PARAMETER_NAME       = 'NewMultimeterPower'
 FRITZBOX_POWER_PARAMETER_VALID      = 'NewMultimeterIsValid'
