@@ -149,15 +149,15 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
     m_oldTimestamp = m_oldEntry[0]
     m_oldValue = m_oldEntry[1]
     m_timeDiff = (m_timestamp.microsecond - m_oldTimestamp.microsecond) / 60000 # Convert to minutes
-        
+
     if valid == 'VALID' and enabled == 'ENABLED':
         if ((abs(currValue - m_oldValue ) > paraMinDelta) or (m_timeDiff > modules.globalConstants.FRITZBOX_TIMESTAMP_DELTA_MAX)): 
             modules.dbConnector.addValue(
                                         str(m_timestamp), g_fritzBoxIdentifier, deviceIdentifier,
                                         paraName, currValue, paraOffset
                                         )
-            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {currValue} +- {paraOffset}] / Time since last update [min]: {m_timeDiff}')
+            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {currValue} +- {paraOffset}] / Time since last update [min]: {round(m_timeDiff, 2)}')
         else:
-            logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {m_oldValue} = {currValue} / Time since last update [min]: {m_timeDiff}]')
+            logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {m_oldValue} = {currValue} / Time since last update [min]: {round(m_timeDiff, 2)}]')
     else:
         logging.info(f'Module fritzPy Parameter {paraName} on device {deviceIdentifier} not accessible: [Enabled: {enabled} / Valid {valid}]')
