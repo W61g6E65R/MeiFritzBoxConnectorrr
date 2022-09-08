@@ -77,7 +77,9 @@ def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
     """
     global g_fritzBoxHomeAutomation
     global g_dbDeviceList
-
+    
+    logging.info('Module fritzPy: Updating HomeAutomation Devices')
+    
     # Get all values from the given device from the fritzBox
     for device in g_dbDeviceList:
         # Read Config from deviceList
@@ -132,6 +134,7 @@ def updateConnectionStatus(fritzBoxId:str):
     if g_fritzBoxStatus.is_linked:
         m_isLinked = 1.0
 
+    logging.info('Module fritzPy: Updating ConnectionStation')
     writeValue(fritzBoxId, '1', 'transmission_rate_upload', m_transmissionRate[0] * m_FactorBitMbit )
     writeValue(fritzBoxId, '1', 'transmission_rate_download', m_transmissionRate[1] * m_FactorBitMbit )
     writeValue(fritzBoxId, '1', 'max_rate_upload', m_maxRate[0]  * m_FactorBitMbit)
@@ -156,8 +159,8 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
                                         str(m_timestamp), g_fritzBoxIdentifier, deviceIdentifier,
                                         paraName, currValue, paraOffset
                                         )
-            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {m_oldValue} -> {currValue} +- {paraOffset}] / Time since last update [min]: {round(m_timeDiff, 2)}')
+            logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {round(m_oldValue,3)} -> {round(currValue,3)} +- {paraOffset}] / Time since last update [min]: {round(m_timeDiff, 2)}')
         else:
-            logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {m_oldValue} = {currValue} / Time since last update [min]: {round(m_timeDiff, 2)}]')
+            logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {round(m_oldValue,3)} = {round(currValue,3)} / Time since last update [min]: {round(m_timeDiff, 2)}]')
     else:
         logging.info(f'Module fritzPy Parameter {paraName} on device {deviceIdentifier} not accessible: [Enabled: {enabled} / Valid {valid}]')
