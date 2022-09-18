@@ -13,7 +13,7 @@ import modules.fritzpy
 logging.basicConfig(format=modules.globalConstants.LOGGING_CONFIG_FORMAT, level=logging.INFO)
 
 # DEBUGGING
-dotenv.load_dotenv()
+# dotenv.load_dotenv()
 
 m_dbName = os.environ['DATABASE_NAME']
 m_dbUser = os.environ['DATABASE_USER']
