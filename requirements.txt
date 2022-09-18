@@ -2,6 +2,7 @@
 configparser
 datetime
 python-dotenv
+pytz
 
 
 # Project specific
