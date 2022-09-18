@@ -4,6 +4,7 @@ services:
     image: meifritzconnectorrr:latest
     container_name: fritzBoxUnten
     hostname: fritzBoxUnten
+    restart: always
     environment:
       FRITZBOX_USER_NAME : ${FRITZBOX_1_USER_NAME}
       FRITZBOX_USER_PASSWORD : ${FRITZBOX_1_USER_PASSWORD}
@@ -18,6 +19,7 @@ services:
     image: meifritzconnectorrr:latest
     container_name: fritzBoxOben
     hostname: fritzBoxOben
+    restart: always
     environment:
       FRITZBOX_USER_NAME : ${FRITZBOX_2_USER_NAME}
       FRITZBOX_USER_PASSWORD : ${FRITZBOX_2_USER_PASSWORD}
