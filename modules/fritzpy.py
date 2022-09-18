@@ -167,12 +167,13 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
                 valid:str = 'VALID', enabled:str = 'ENABLED'):
 
     m_timestamp = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
-    
+
     # Check if parameter has changed considerable and then add new value if neccessary
     m_oldEntry = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
-    m_oldTimestamp = m_oldEntry[0]
+    m_oldTimestamp_unaware = m_oldEntry[0]
+    m_oldTimeStamp = m_oldTimestamp_unaware.replace(tzinfo=pytz.timezone('Europe/Berlin'))
     m_oldValue = m_oldEntry[1]
-    m_timeDiffRaw = (m_timestamp - m_oldTimestamp) 
+    m_timeDiffRaw = (m_timestamp - m_oldTimeStamp) 
     m_timeDiff = m_timeDiffRaw.microseconds / 60000 + m_timeDiffRaw.days * 60 * 60 * 24 # Convert to minutes
 
     if valid == 'VALID' and enabled == 'ENABLED':
