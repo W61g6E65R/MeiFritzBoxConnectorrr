@@ -2,6 +2,7 @@
 # Imports: global
 import logging
 import datetime
+from signal import SIG_DFL
 
 # Imports: 3rd party
 from fritzconnection import FritzConnection
@@ -94,6 +95,24 @@ def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_NAME, modules.globalConstants.FRITZBOX_TEMPERATURE_DELTA_MIN, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_VALID, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_FACTOR, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_OFFSET)
+            # Update HKR (HeizKoerpeRregler) Status
+            updateValue(fritzboxId, m_DeviceIdentifier,
+                        modules.globalConstants.FRITZBOX_HKR_VENT_STAT_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+                        )    
+            # Update HKR (HeizKoerpeRregler) Reduced control temperature
+            updateValue(fritzboxId, m_DeviceIdentifier,
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_REDUCED_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
+                        )  
+            # Update HKR (HeizKoerpeRregler) Comfort control temperature
+            updateValue(fritzboxId, m_DeviceIdentifier,
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
+                        )  
+
 
         if (m_Read_Power == True and m_DeviceActive == True):
             updateValue(fritzboxId, m_DeviceIdentifier, 
@@ -111,7 +130,8 @@ def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta
         logging.error(f'ERROR: Module fritzpy: {deviceIdentifier}@{fritzBoxId}')
         logging.error(e)
 
-    m_currValue = m_currentDeviceValues[paraName] * paraFactor
+    m_currRawValue = convert2float(m_currentDeviceValues[paraName])
+    m_currValue = m_currRawValue * paraFactor
     m_valid = m_currentDeviceValues[paraValidTag]
     m_enabled = m_currentDeviceValues[paraEnableTag]
 
@@ -164,3 +184,25 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
             logging.info(f'Module fritzPy: Parameter {paraName} not changed. [{deviceIdentifier}: {round(m_oldValue,3)} = {round(currValue,3)} / Time since last update [min]: {round(m_timeDiff, 2)}]')
     else:
         logging.info(f'Module fritzPy Parameter {paraName} on device {deviceIdentifier} not accessible: [Enabled: {enabled} / Valid {valid}]')
+
+
+def convert2float(inputValue)-> float:
+    m_retVal = 0.0
+
+    if (isinstance(inputValue, str)):
+        
+        if (inputValue in ('ENABLED', 'VALID', 'OPEN')):
+            m_retVal = 1.0
+        if (inputValue in ('DISABLED', 'INVALID', 'CLOSED')):
+            m_retVal = 0.0
+
+    elif (isinstance(inputValue, float)):
+        m_retVal = inputValue
+
+    elif (isinstance(inputValue, int)):
+        m_retVal = float(inputValue)
+
+    else:
+        logging.error(f'Convert2Float: Invalid Input Value: {inputValue}')
+
+    return m_retVal
