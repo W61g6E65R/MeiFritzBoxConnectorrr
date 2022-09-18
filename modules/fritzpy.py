@@ -2,7 +2,7 @@
 # Imports: global
 import logging
 import datetime
-from signal import SIG_DFL
+import pytz
 
 # Imports: 3rd party
 from fritzconnection import FritzConnection
@@ -95,18 +95,18 @@ def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_NAME, modules.globalConstants.FRITZBOX_TEMPERATURE_DELTA_MIN, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_VALID, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_FACTOR, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_OFFSET)
-            # Update HKR (HeizKoerpeRregler) Status
+            # Update HKR (HeizKoerpeRegler) Status
             updateValue(fritzboxId, m_DeviceIdentifier,
-                        modules.globalConstants.FRITZBOX_HKR_VENT_STAT_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_VALVE_STAT_PARAMETER_NAME, 0.0,
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
                         )    
-            # Update HKR (HeizKoerpeRregler) Reduced control temperature
+            # Update HKR (HeizKoerpeRegler) Reduced control temperature
             updateValue(fritzboxId, m_DeviceIdentifier,
                         modules.globalConstants.FRITZBOX_HKR_TEMP_REDUCED_PARAMETER_NAME, 0.0,
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
                         modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
                         )  
-            # Update HKR (HeizKoerpeRregler) Comfort control temperature
+            # Update HKR (HeizKoerpeRegler) Comfort control temperature
             updateValue(fritzboxId, m_DeviceIdentifier,
                         modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
@@ -166,12 +166,14 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
                 paraMinDelta:float = 0.0, paraOffset:float = 0.0, 
                 valid:str = 'VALID', enabled:str = 'ENABLED'):
 
-    m_timestamp = datetime.datetime.now()
+    m_timestamp = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
+    
     # Check if parameter has changed considerable and then add new value if neccessary
     m_oldEntry = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
     m_oldTimestamp = m_oldEntry[0]
     m_oldValue = m_oldEntry[1]
-    m_timeDiff = (m_timestamp.microsecond - m_oldTimestamp.microsecond) / 60000 # Convert to minutes
+    m_timeDiffRaw = (m_timestamp - m_oldTimestamp) 
+    m_timeDiff = m_timeDiffRaw.microseconds / 60000 + m_timeDiffRaw.days * 60 * 60 * 24 # Convert to minutes
 
     if valid == 'VALID' and enabled == 'ENABLED':
         if ((abs(currValue - m_oldValue ) > paraMinDelta) or (m_timeDiff > modules.globalConstants.FRITZBOX_TIMESTAMP_DELTA_MAX)): 
