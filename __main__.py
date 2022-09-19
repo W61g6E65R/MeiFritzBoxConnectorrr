@@ -31,6 +31,9 @@ modules.dbConnector.connect(m_dbName, m_dbUser, m_dbPassword, m_dbHost, m_dbPort
 # Connect with fritzBox
 modules.fritzpy.connect(m_fritzIp, m_fritzUser, m_fritzPass, m_fritzIdent)
 
+# First read in all configured devices from database
+modules.fritzpy.updateDeviceList(m_fritzIdent)
+
 schedule.every(15).seconds.do(modules.fritzpy.updateHomeAutomationDeviceValues, m_fritzIdent)
 schedule.every(60).minutes.do(modules.fritzpy.updateDeviceList, m_fritzIdent)
 schedule.every(5).minutes.do(modules.fritzpy.updateConnectionStatus, m_fritzIdent)

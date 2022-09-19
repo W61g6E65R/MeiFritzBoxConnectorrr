@@ -13,6 +13,8 @@ FRITZBOX_TEMPERATURE_DELTA_MIN          = 0.49 # Only write values if delta is r
 FRITZBOX_TEMPERATURE_FACTOR             = 0.1 # Factor for multiplication 
 
 FRITZBOX_HKR_VALVE_STAT_PARAMETER_NAME    = 'NewHkrSetVentilStatus'
+FRITZBOX_HKR_VALVE_REDUCED_PARAMETER_NAME = 'NewHkrReduceVentilStatus'
+FRITZBOX_HKR_VALVE_COMFORT_PARAMETER_NAME = 'NewHkrComfortVentilStatus'
 FRITZBOX_HKR_TEMP_REDUCED_PARAMETER_NAME = 'NewHkrReduceTemperature'
 FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME = 'NewHkrComfortTemperature'
 FRITZBOX_HKR_VALID_PARAMETER_NAME        = 'NewHkrIsValid'

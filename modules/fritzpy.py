@@ -48,8 +48,6 @@ def connect(fritzBoxIPAddress:str, fritzBoxUserName:str, fritzBoxUserPassword:st
 
     logging.info(f"Module fritzpy: Connection to {fritzBoxUserName}@{fritzBoxIPAddress} established")
 
-    # First read in all configured devices from database
-    updateDeviceList(fritzBoxIdentifier)
 
 def updateDeviceList(fritzBoxIdentifier:str) -> None:
     """_summary_
@@ -60,15 +58,13 @@ def updateDeviceList(fritzBoxIdentifier:str) -> None:
     global g_dbDeviceList
     g_dbDeviceList = modules.dbConnector.getDeviceList(fritzBoxIdentifier)
 
-def printDeviceList() -> None:
+def getDeviceList():
     """ Read and print the full device list from the FritzBox
     """
     global g_fritzBoxHomeAutomation
     info = g_fritzBoxHomeAutomation.device_informations()
     logging.info(f"Module fritzpy: Get Device list")
-    for key in info:
-        print (key)
-        print ('/n')
+    return info
 
 def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
     """ Read values for all devices in database from FritzBox and update if neccessary
@@ -111,7 +107,17 @@ def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
                         modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
                         modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
+                        )
+            # Update HKR (HeizKoerpeRegler) Reduced control valve
+            updateValue(fritzboxId, m_DeviceIdentifier,
+                        modules.globalConstants.FRITZBOX_HKR_VALVE_REDUCED_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
                         )  
+            # Update HKR (HeizKoerpeRegler) Comfort control valve
+            updateValue(fritzboxId, m_DeviceIdentifier,
+                        modules.globalConstants.FRITZBOX_HKR_VALVE_COMFORT_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+                        )    
 
 
         if (m_Read_Power == True and m_DeviceActive == True):
