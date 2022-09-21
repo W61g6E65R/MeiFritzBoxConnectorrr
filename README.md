@@ -9,6 +9,9 @@ All given information are only tested with Ubuntu 22.04!
 
   - **VirtualEnv**
     - <code>python3 -m venv .venv </code>
+  - **Docker-Compose**
+    - Rename /templates/template.env to /.env
+    - Insert credentials in .env file. This file is used in docker-compose
 
 ## MessageStructure
 
