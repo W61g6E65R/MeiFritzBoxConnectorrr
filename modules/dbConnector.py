@@ -2,6 +2,7 @@
 import errno
 import logging
 import datetime
+from xmlrpc.client import boolean
 
 # Imports: project specific
 import psycopg
@@ -83,12 +84,14 @@ def getDeviceList(fritzBoxId:str) -> list:
     g_dbConnection.commit()
     return m_deviceList
 
-def addValue(timestamp:str, fritzBoxId:str, identifier:str, parametername:str, parametervalue:float, offset:float = 0.0 ) -> None:
+def addValue(timestamp:str, fritzBoxId:str, identifier:str, 
+                parametername:str, parametervalue:float, 
+                offset:float = 0.0, isautocomplete:bool = False ) -> None:
     global g_dbConnection
     checkConnectionStatus()
     m_dbCursor = g_dbConnection.cursor()
-    m_sqlStatement = f"INSERT INTO values_float (timestamp, fritzboxid, identifier, parametername, value, valueoffset) \
-                        VALUES ('{timestamp}', '{fritzBoxId}','{identifier}', '{parametername}', {parametervalue}, {float(offset)});"
+    m_sqlStatement = f"INSERT INTO values_float (timestamp, fritzboxid, identifier, parametername, value, valueoffset, isautocomplete) \
+                        VALUES ('{timestamp}', '{fritzBoxId}','{identifier}', '{parametername}', {parametervalue}, {float(offset)}, {isautocomplete});"
     try:
         m_dbCursor.execute(m_sqlStatement)
         g_dbConnection.commit()

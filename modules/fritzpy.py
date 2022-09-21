@@ -180,13 +180,16 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
     m_oldTimeStamp = m_oldTimestamp_unaware.replace(tzinfo=pytz.timezone('Europe/Berlin'))
     m_oldValue = m_oldEntry[1]
     m_timeDiffRaw = (m_timestamp - m_oldTimeStamp) 
-    m_timeDiff = m_timeDiffRaw.microseconds / 60000 + m_timeDiffRaw.days * 60 * 60 * 24 # Convert to minutes
-
+    m_timeDiff = m_timeDiffRaw.total_seconds() / 60  # Convert to minutes
+    m_timeDiffExceeded = False
+    if (m_timeDiff > modules.globalConstants.FRITZBOX_TIMESTAMP_DELTA_MAX):
+        m_timeDiffExceeded = True
+    
     if valid == 'VALID' and enabled == 'ENABLED':
-        if ((abs(currValue - m_oldValue ) > paraMinDelta) or (m_timeDiff > modules.globalConstants.FRITZBOX_TIMESTAMP_DELTA_MAX)): 
+        if ((abs(currValue - m_oldValue ) > paraMinDelta) or m_timeDiffExceeded): 
             modules.dbConnector.addValue(
                                         str(m_timestamp), g_fritzBoxIdentifier, deviceIdentifier,
-                                        paraName, currValue, paraOffset
+                                        paraName, currValue, paraOffset, m_timeDiffExceeded
                                         )
             logging.info(f'Module fritzPy: Updating Parameter {paraName}. [{deviceIdentifier}: {round(m_oldValue,3)} -> {round(currValue,3)} +- {paraOffset}] / Time since last update [min]: {round(m_timeDiff, 2)}')
         else:

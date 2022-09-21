@@ -13,7 +13,7 @@ import modules.fritzpy
 logging.basicConfig(format=modules.globalConstants.LOGGING_CONFIG_FORMAT, level=logging.INFO)
 
 # DEBUGGING
-# dotenv.load_dotenv()
+dotenv.load_dotenv()
 
 m_dbName = os.environ['DATABASE_NAME']
 m_dbUser = os.environ['DATABASE_USER']
@@ -36,7 +36,7 @@ modules.fritzpy.updateDeviceList(m_fritzIdent)
 
 schedule.every(15).seconds.do(modules.fritzpy.updateHomeAutomationDeviceValues, m_fritzIdent)
 schedule.every(60).minutes.do(modules.fritzpy.updateDeviceList, m_fritzIdent)
-schedule.every(5).minutes.do(modules.fritzpy.updateConnectionStatus, m_fritzIdent)
+schedule.every(15).minutes.do(modules.fritzpy.updateConnectionStatus, m_fritzIdent)
 
 while True:
     schedule.run_pending()
