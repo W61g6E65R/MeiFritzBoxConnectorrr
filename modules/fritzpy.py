@@ -108,10 +108,10 @@ def updateHomeAutomationDeviceValues(fritzBoxId:str) -> None:
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
                         modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR)  
             # Update HKR (HeizKoerpeRegler) Comfort control temperature
-            #updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
-            #            modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
-            #            modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-            #            modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR)
+            updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR)
             # Update HKR (HeizKoerpeRegler) Reduced control valve
             #updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
             #            modules.globalConstants.FRITZBOX_HKR_VALVE_REDUCED_PARAMETER_NAME, 0.0,
