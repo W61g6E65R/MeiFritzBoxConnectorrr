@@ -66,7 +66,7 @@ def getDeviceList():
     logging.info(f"Module fritzpy: Get Device list")
     return info
 
-def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
+def updateHomeAutomationDeviceValues(fritzBoxId:str) -> None:
     """ Read values for all devices in database from FritzBox and update if neccessary
 
     Args:
@@ -83,66 +83,61 @@ def updateHomeAutomationDeviceValues(fritzboxId:str) -> None:
         m_DeviceIdentifier = device[0]
         m_DeviceActive     = device[5]
         m_Read_Temperature = device[1]
-        m_Read_Power = device[2]
+        m_Read_Power       = device[2]
         #m_Read_Humidity = device[4]
 
+        # Read parameter from fritzBox
+        try:
+            m_currentDeviceValues = g_fritzBoxHomeAutomation.get_device_information_by_identifier(m_DeviceIdentifier)
+        except Exception as e:
+            logging.error(f'ERROR: Module fritzpy: {m_DeviceIdentifier}@{fritzBoxId}')
+            logging.error(e)
+
         if (m_Read_Temperature == True and m_DeviceActive == True):
-            updateValue(fritzboxId, m_DeviceIdentifier, 
+            updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_NAME, modules.globalConstants.FRITZBOX_TEMPERATURE_DELTA_MIN, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_VALID, 
                         modules.globalConstants.FRITZBOX_TEMPERATURE_FACTOR, modules.globalConstants.FRITZBOX_TEMPERATURE_PARAMETER_OFFSET)
             # Update HKR (HeizKoerpeRegler) Status
-            updateValue(fritzboxId, m_DeviceIdentifier,
+            updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
                         modules.globalConstants.FRITZBOX_HKR_VALVE_STAT_PARAMETER_NAME, 0.0,
-                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-                        )    
+                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME)    
             # Update HKR (HeizKoerpeRegler) Reduced control temperature
-            updateValue(fritzboxId, m_DeviceIdentifier,
+            updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
                         modules.globalConstants.FRITZBOX_HKR_TEMP_REDUCED_PARAMETER_NAME, 0.0,
                         modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
-                        )  
+                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR)  
             # Update HKR (HeizKoerpeRegler) Comfort control temperature
-            updateValue(fritzboxId, m_DeviceIdentifier,
-                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
-                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-                        modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR
-                        )
+            #updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
+            #            modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_PARAMETER_NAME, 0.0,
+            #            modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
+            #            modules.globalConstants.FRITZBOX_HKR_TEMP_COMFORT_FACTOR)
             # Update HKR (HeizKoerpeRegler) Reduced control valve
-            updateValue(fritzboxId, m_DeviceIdentifier,
-                        modules.globalConstants.FRITZBOX_HKR_VALVE_REDUCED_PARAMETER_NAME, 0.0,
-                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-                        )  
+            #updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
+            #            modules.globalConstants.FRITZBOX_HKR_VALVE_REDUCED_PARAMETER_NAME, 0.0,
+            #            modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME)  
             # Update HKR (HeizKoerpeRegler) Comfort control valve
-            updateValue(fritzboxId, m_DeviceIdentifier,
-                        modules.globalConstants.FRITZBOX_HKR_VALVE_COMFORT_PARAMETER_NAME, 0.0,
-                        modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME,
-                        )    
-
+            #updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
+            #            modules.globalConstants.FRITZBOX_HKR_VALVE_COMFORT_PARAMETER_NAME, 0.0,
+            #            modules.globalConstants.FRITZBOX_HKR_ENABLED_PARAMETER_NAME, modules.globalConstants.FRITZBOX_HKR_VALID_PARAMETER_NAME)    
 
         if (m_Read_Power == True and m_DeviceActive == True):
-            updateValue(fritzboxId, m_DeviceIdentifier, 
+            updateValue(fritzBoxId, m_DeviceIdentifier, m_currentDeviceValues, 
                         modules.globalConstants.FRITZBOX_POWER_PARAMETER_NAME, modules.globalConstants.FRITZBOX_POWER_DELTA_MIN, 
                         modules.globalConstants.FRITZBOX_POWER_PARAMETER_ENABLED, modules.globalConstants.FRITZBOX_POWER_PARAMETER_VALID, 
                         modules.globalConstants.FRITZBOX_POWER_FACTOR)
         
 
-def updateValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, paraMinDelta:float, paraEnableTag:str, paraValidTag:str, paraFactor:float = 1.0, paraOffsetTag:str = '') -> None:                  
+def updateValue(fritzBoxId:str, deviceIdentifier:str, deviceValue, paraName:str, paraMinDelta:float, 
+                paraEnableTag:str, paraValidTag:str, paraFactor:float = 1.0, paraOffsetTag:str = '') -> None:                  
     
-    # Read parameter from fritzBox
-    try:
-        m_currentDeviceValues = g_fritzBoxHomeAutomation.get_device_information_by_identifier(deviceIdentifier)
-    except Exception as e:
-        logging.error(f'ERROR: Module fritzpy: {deviceIdentifier}@{fritzBoxId}')
-        logging.error(e)
-
-    m_currRawValue = convert2float(m_currentDeviceValues[paraName])
+    m_currRawValue = convert2float(deviceValue[paraName])
     m_currValue = m_currRawValue * paraFactor
-    m_valid = m_currentDeviceValues[paraValidTag]
-    m_enabled = m_currentDeviceValues[paraEnableTag]
+    m_valid = deviceValue[paraValidTag]
+    m_enabled = deviceValue[paraEnableTag]
 
     if (paraOffsetTag != ''):
-        paraOffset = m_currentDeviceValues[paraOffsetTag]
+        paraOffset = deviceValue[paraOffsetTag]
     else:
         paraOffset = 0.0
     
