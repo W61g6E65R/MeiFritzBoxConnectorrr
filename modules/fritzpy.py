@@ -2,7 +2,6 @@
 # Imports: global
 import logging
 import datetime
-import pytz
 
 # Imports: 3rd party
 from fritzconnection import FritzConnection
@@ -167,12 +166,12 @@ def writeValue(fritzBoxId:str, deviceIdentifier:str, paraName:str, currValue:flo
                 paraMinDelta:float = 0.0, paraOffset:float = 0.0, 
                 valid:str = 'VALID', enabled:str = 'ENABLED'):
 
-    m_timestamp = datetime.datetime.now(pytz.timezone('Europe/Berlin'))
+    m_timestamp = datetime.datetime.now()
 
     # Check if parameter has changed considerable and then add new value if neccessary
     m_oldEntry = modules.dbConnector.getLastValue(fritzBoxId, deviceIdentifier , paraName)
     m_oldTimestamp_unaware = m_oldEntry[0]
-    m_oldTimeStamp = m_oldTimestamp_unaware.replace(tzinfo=pytz.timezone('Europe/Berlin'))
+    m_oldTimeStamp = m_oldTimestamp_unaware.replace()
     m_oldValue = m_oldEntry[1]
     m_timeDiffRaw = (m_timestamp - m_oldTimeStamp) 
     m_timeDiff = m_timeDiffRaw.total_seconds() / 60  # Convert to minutes
