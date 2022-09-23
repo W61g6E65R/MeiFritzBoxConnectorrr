@@ -24,6 +24,9 @@ m_fritzIp = os.environ['FRITZBOX_IP_ADDRESS']
 m_fritzUser = os.environ['FRITZBOX_USER_NAME']
 m_fritzPass = os.environ['FRITZBOX_USER_PASSWORD']
 m_fritzIdent = os.environ['FRITZBOX_IDENTIFIER']
+m_refreshRate_Automation  = os.environ['REFRESH_RATE_SMARTHOME_SECONDS']
+m_refreshRate_DeviceList  = os.environ['REFRESH_RATE_DEVICELIST_MINUTES']
+m_refreshRate_Connection  = os.environ['REFRESH_RATE_CONNECTION_MINUTES']
 
 # Connect with database
 modules.dbConnector.connect(m_dbName, m_dbUser, m_dbPassword, m_dbHost, m_dbPort)
@@ -34,9 +37,9 @@ modules.fritzpy.connect(m_fritzIp, m_fritzUser, m_fritzPass, m_fritzIdent)
 # First read in all configured devices from database
 modules.fritzpy.updateDeviceList(m_fritzIdent)
 
-schedule.every(15).seconds.do(modules.fritzpy.updateHomeAutomationDeviceValues, m_fritzIdent)
-schedule.every(60).minutes.do(modules.fritzpy.updateDeviceList, m_fritzIdent)
-schedule.every(15).minutes.do(modules.fritzpy.updateConnectionStatus, m_fritzIdent)
+schedule.every(m_refreshRate_Automation).seconds.do(modules.fritzpy.updateHomeAutomationDeviceValues, m_fritzIdent)
+schedule.every(m_refreshRate_DeviceList).minutes.do(modules.fritzpy.updateDeviceList, m_fritzIdent)
+schedule.every(m_refreshRate_Connection).minutes.do(modules.fritzpy.updateConnectionStatus, m_fritzIdent)
 
 while True:
     schedule.run_pending()
