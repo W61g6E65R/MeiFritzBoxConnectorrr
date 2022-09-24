@@ -24,9 +24,9 @@ m_fritzIp = os.environ['FRITZBOX_IP_ADDRESS']
 m_fritzUser = os.environ['FRITZBOX_USER_NAME']
 m_fritzPass = os.environ['FRITZBOX_USER_PASSWORD']
 m_fritzIdent = os.environ['FRITZBOX_IDENTIFIER']
-m_refreshRate_Automation  = os.environ['REFRESH_RATE_SMARTHOME_SECONDS']
-m_refreshRate_DeviceList  = os.environ['REFRESH_RATE_DEVICELIST_MINUTES']
-m_refreshRate_Connection  = os.environ['REFRESH_RATE_CONNECTION_MINUTES']
+m_refreshRate_Automation  = int(os.environ['REFRESH_RATE_SMARTHOME_SECONDS'])
+m_refreshRate_DeviceList  = int(os.environ['REFRESH_RATE_DEVICELIST_MINUTES'])
+m_refreshRate_Connection  = int(os.environ['REFRESH_RATE_CONNECTION_MINUTES'])
 
 # Connect with database
 modules.dbConnector.connect(m_dbName, m_dbUser, m_dbPassword, m_dbHost, m_dbPort)
