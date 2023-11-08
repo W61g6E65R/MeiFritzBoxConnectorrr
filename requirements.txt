@@ -1,0 +1,11 @@
+# Global requierements
+configparser
+datetime
+python-dotenv
+
+
+# Project specific
+fritzconnection
+psycopg
+pandas
+schedule

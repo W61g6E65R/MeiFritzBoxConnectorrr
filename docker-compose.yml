@@ -1,0 +1,12 @@
+version: "3.9" 
+services:
+  fritzBoxConnectorrr:
+    image: meifritzboxconnectorrr:latest
+    container_name: fritzBoxConnectorrr
+    hostname: fritzBoxConnectorrr
+    restart: always
+    environment:
+      FRITZBOX_USER_NAME : ${FRITZBOX_USER_NAME}
+      FRITZBOX_USER_PASSWORD : ${FRITZBOX_USER_PASSWORD}
+      DATABASE_USER_Name     : ${DATABASE_USER_NAME}
+      DATABASE_USER_PASSWORD      : ${DATABASE_USER_PASSWORD}
